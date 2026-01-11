@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>d12 Probability Sheet</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Attacker vs Defender</h1>
+            <p>Battle Calculator for Root (2x d12 Shared Dice)</p>
+            <a href="analytics.html" class="nav-link">View Dice Analytics →</a>
+        </header>
+
+        <main>
+            <!-- Battle Simulator Section -->
+            <section class="battle-section">
+
+                <div class="controls card">
+                    <div class="control-group">
+                        <label>Attacker Warriors</label>
+                        <select id="att-dice">
+                            <option value="0">0 Warriors</option>
+                            <option value="1">1 Warrior</option>
+                            <option value="2">2 Warriors</option>
+                            <option value="3" selected>3+ Warriors</option>
+                        </select>
+                    </div>
+                    <div class="vs-badge">VS</div>
+                    <div class="control-group">
+                        <label>Defender Warriors</label>
+                        <select id="def-dice">
+                            <option value="0">0 Warriors</option>
+                            <option value="1">1 Warrior</option>
+                            <option value="2" selected>2 Warriors</option>
+                            <option value="3">3+ Warriors</option>
+                        </select>
+                    </div>
+                    <button onclick="calculateBattle()" class="calc-btn">Calculate Interactions</button>
+                </div>
+
+                <div class="table-container card" id="table-wrapper">
+                    <!-- Matrix Table injected here -->
+                </div>
+
+                <div id="ev-results" class="ev-card card">
+                    <!-- Expected Value Results injected here -->
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+
+</html>

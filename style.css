@@ -1,0 +1,418 @@
+/* Existing Styles... */
+:root {
+    --bg-color: #0f172a;
+    --text-color: #e2e8f0;
+    --card-bg: rgba(30, 41, 59, 0.7);
+    --card-border: rgba(148, 163, 184, 0.1);
+    --accent-primary: #8b5cf6;
+    --accent-secondary: #06b6d4;
+    --font-main: 'Outfit', sans-serif;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-main);
+    background-color: var(--bg-color);
+    background-image:
+        radial-gradient(circle at 10% 20%, rgba(139, 92, 246, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(6, 182, 212, 0.15) 0%, transparent 40%);
+    color: var(--text-color);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    /* align-items: center; Remove center align to allow scroll */
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+.container {
+    width: 100%;
+    max-width: 900px;
+    padding: 2rem;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 3rem;
+    animation: fadeInDown 1s ease-out;
+}
+
+header h1 {
+    font-size: 3rem;
+    background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 0;
+    letter-spacing: -0.05em;
+}
+
+header p {
+    color: #94a3b8;
+    font-size: 1.1rem;
+    margin-top: 0.5rem;
+}
+
+.card {
+    background: var(--card-bg);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+    border-color: rgba(139, 92, 246, 0.3);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    animation: fadeInUp 1s ease-out 0.2s backwards;
+}
+
+.stat-card h2 {
+    font-size: 1rem;
+    color: #94a3b8;
+    margin: 0 0 0.5rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.stat-card .value {
+    font-size: 2.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #fff;
+    background: linear-gradient(135deg, var(--accent-secondary), var(--accent-primary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.bar-container {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-secondary), var(--accent-primary));
+    border-radius: 3px;
+    transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 0 10px var(--accent-primary);
+}
+
+.chart-section {
+    width: 100%;
+    min-height: 300px;
+    animation: fadeInUp 1s ease-out 0.4s backwards;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 3rem;
+}
+
+.chart-section h2 {
+    align-self: flex-start;
+    margin-top: 0;
+    color: #e2e8f0;
+}
+
+canvas {
+    width: 100% !important;
+    height: 300px !important;
+    max-width: 800px;
+}
+
+/* Battle Section */
+.battle-section {
+    animation: fadeInUp 1s ease-out 0.6s backwards;
+}
+
+.section-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.section-header h2 {
+    font-size: 2rem;
+    margin: 0;
+    background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+    margin-bottom: 2rem;
+}
+
+.control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+label {
+    color: #94a3b8;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+select {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid var(--card-border);
+    color: #fff;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-family: var(--font-main);
+    font-size: 1.1rem;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.2s;
+}
+
+select:hover,
+select:focus {
+    border-color: var(--accent-primary);
+}
+
+.vs-badge {
+    font-weight: 800;
+    font-size: 1.5rem;
+    color: var(--accent-secondary);
+    background: rgba(6, 182, 212, 0.1);
+    padding: 1rem;
+    border-radius: 50%;
+    width: 3rem;
+    height: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.calc-btn {
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    border: none;
+    color: white;
+    padding: 0.75rem 2rem;
+    border-radius: 8px;
+    font-family: var(--font-main);
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 1rem;
+    margin-top: 1.5rem;
+    /* Align with select boxes roughly */
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.calc-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+}
+
+.battle-result-card {
+    text-align: center;
+}
+
+.battle-result-card h3 {
+    margin: 0 0 0.5rem;
+    color: #94a3b8;
+    font-size: 0.9rem;
+}
+
+.battle-result-card .outcome {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    color: white;
+}
+
+/* Expected Value Results */
+.ev-card {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    margin-top: 1rem;
+    padding: 1rem;
+    background: rgba(15, 23, 42, 0.4);
+    border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.ev-stat {
+    text-align: center;
+}
+
+.ev-stat h3 {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    margin: 0 0 0.5rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.ev-stat .value {
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+/* Nav Link */
+.nav-link {
+    display: inline-block;
+    margin-top: 0.5rem;
+    color: var(--accent-secondary);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: color 0.2s;
+}
+
+.nav-link:hover {
+    color: var(--accent-primary);
+    text-decoration: underline;
+}
+
+/* Matrix Table */
+.matrix-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.matrix-table th,
+.matrix-table td {
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    padding: 0.75rem;
+    text-align: center;
+}
+
+.matrix-table th {
+    background: rgba(15, 23, 42, 0.5);
+    color: #94a3b8;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+}
+
+.matrix-table td {
+    vertical-align: middle;
+}
+
+.matrix-table .cell-val {
+    font-weight: 600;
+    color: #fff;
+    font-size: 1.1rem;
+}
+
+.matrix-table .cell-count {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    margin-top: 0.2rem;
+}
+
+.sum-col,
+.sum-row th,
+.sum-row td {
+    background: rgba(6, 182, 212, 0.1) !important;
+    font-weight: bold;
+    color: var(--accent-secondary) !important;
+}
+
+.sum-row td {
+    border-top: 2px solid var(--accent-secondary);
+}
+
+.sum-col {
+    border-left: 2px solid var(--accent-secondary) !important;
+}
+
+/* Battle Result Table */
+.table-container {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+th,
+td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+th {
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    color: #94a3b8;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+}
+
+td {
+    color: #e2e8f0;
+}
+
+tr:last-child td {
+    border-bottom: none;
+}
+
+tr:hover td {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-color);
+}
+
+::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #475569;
+}
