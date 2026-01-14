@@ -154,10 +154,86 @@ canvas {
 .controls {
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
     gap: 2rem;
     flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+
+.combatant-column {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-width: 220px;
+}
+
+.combatant-title {
+    margin: 0;
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    text-align: center;
+}
+
+.attacker-title {
+    color: #f87171;
+}
+
+.defender-title {
+    color: #4ade80;
+}
+
+.ability-toggles {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background: rgba(15, 23, 42, 0.4);
+    border-radius: 8px;
+    border: 1px solid var(--card-border);
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: #cbd5e1;
+    transition: color 0.2s;
+}
+
+.checkbox-label:hover {
+    color: #fff;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--accent-primary);
+    cursor: pointer;
+}
+
+.checkbox-label span {
+    user-select: none;
+}
+
+.calculate-row {
+    display: flex;
+    justify-content: center;
     margin-bottom: 2rem;
+}
+
+.abilities-active {
+    width: 100%;
+    text-align: center;
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--accent-secondary);
+    background: rgba(6, 182, 212, 0.1);
+    border-radius: 6px;
+    border: 1px solid rgba(6, 182, 212, 0.2);
 }
 
 .control-group {
@@ -215,8 +291,6 @@ select:focus {
     font-weight: 600;
     cursor: pointer;
     font-size: 1rem;
-    margin-top: 1.5rem;
-    /* Align with select boxes roughly */
     transition: transform 0.2s, box-shadow 0.2s;
 }
 
@@ -244,12 +318,14 @@ select:focus {
 /* Expected Value Results */
 .ev-card {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-around;
     align-items: center;
     margin-top: 1rem;
     padding: 1rem;
     background: rgba(15, 23, 42, 0.4);
     border: 1px solid rgba(148, 163, 184, 0.1);
+    gap: 0.5rem;
 }
 
 .ev-stat {

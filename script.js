@@ -2,6 +2,24 @@
 const die1 = [0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3];
 const die2 = [0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3];
 
+// Faction Presets - maps faction selection to ability states
+const FACTION_PRESETS = {
+    attacker: {
+        'none': { extraHit: false, ignoreFirstHit: false },
+        'eyrie-commander': { extraHit: true, ignoreFirstHit: false },
+        'hundreds-wrathful': { extraHit: true, ignoreFirstHit: false },
+        'hundreds-stubborn': { extraHit: false, ignoreFirstHit: true },
+        'vagabond-ronin': { extraHit: true, ignoreFirstHit: false },
+        'keepers-relic': { extraHit: false, ignoreFirstHit: true }
+    },
+    defender: {
+        'none': { guerrillaWar: false, ignoreFirstHit: false },
+        'woodland-alliance': { guerrillaWar: true, ignoreFirstHit: false },
+        'keepers-relic': { guerrillaWar: false, ignoreFirstHit: true },
+        'hundreds-stubborn': { guerrillaWar: false, ignoreFirstHit: true }
+    }
+};
+
 function calculateProbabilities() {
     let totalCombinations = 0;
     let distinctValues = {
@@ -164,6 +182,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Only run battle calc if inputs exist (Index Page)
     if (document.getElementById('att-dice')) {
+        // Bind faction dropdowns to apply presets
+        const attFaction = document.getElementById('att-faction');
+        const defFaction = document.getElementById('def-faction');
+
+        if (attFaction) {
+            attFaction.addEventListener('change', (e) => {
+                applyAttackerPreset(e.target.value);
+                calculateBattle();
+            });
+        }
+
+        if (defFaction) {
+            defFaction.addEventListener('change', (e) => {
+                applyDefenderPreset(e.target.value);
+                calculateBattle();
+            });
+        }
+
+        // Auto-recalculate on any input change
+        const allInputs = document.querySelectorAll('select, input[type="checkbox"]');
+        allInputs.forEach(input => {
+            input.addEventListener('change', calculateBattle);
+        });
+
+        // Initial calculation
         calculateBattle();
 
         // Bind Enter key
@@ -182,14 +225,52 @@ window.addEventListener('resize', () => {
 // Probabilities are identical to a d4 (0-3).
 const FACES = [0, 1, 2, 3];
 
+// Apply faction preset to checkboxes
+function applyAttackerPreset(faction) {
+    const preset = FACTION_PRESETS.attacker[faction] || FACTION_PRESETS.attacker['none'];
+    document.getElementById('att-extra-hit').checked = preset.extraHit;
+    document.getElementById('att-ignore-hit').checked = preset.ignoreFirstHit;
+}
+
+function applyDefenderPreset(faction) {
+    const preset = FACTION_PRESETS.defender[faction] || FACTION_PRESETS.defender['none'];
+    document.getElementById('def-guerrilla-war').checked = preset.guerrillaWar;
+    document.getElementById('def-ignore-hit').checked = preset.ignoreFirstHit;
+}
+
+// Read current ability states from UI
+function getAbilities() {
+    return {
+        attacker: {
+            extraHit: document.getElementById('att-extra-hit')?.checked || false,
+            ignoreFirstHit: document.getElementById('att-ignore-hit')?.checked || false,
+            foilAmbush: document.getElementById('att-foil-ambush')?.checked || false
+        },
+        defender: {
+            guerrillaWar: document.getElementById('def-guerrilla-war')?.checked || false,
+            ignoreFirstHit: document.getElementById('def-ignore-hit')?.checked || false,
+            ambush: document.getElementById('def-ambush')?.checked || false
+        }
+    };
+}
+
 // Logic for Root: High roll (Attacker) vs Low roll (Defender)
+// Now with faction ability support
 function calculateBattle() {
     const attCount = parseInt(document.getElementById('att-dice').value);
     const defCount = parseInt(document.getElementById('def-dice').value);
+    const abilities = getAbilities();
+
+    // Pre-battle: Calculate ambush damage (happens before dice roll)
+    let ambushDamage = 0;
+    if (abilities.defender.ambush && !abilities.attacker.foilAmbush) {
+        ambushDamage = Math.min(2, attCount); // Ambush deals 2 hits, capped by attacker warriors
+    }
 
     // Matrix [A-Loss][D-Loss] -> Count
-    // Since losses can be 0,1,2,3, we need a 4x4 matrix
-    const matrix = Array(4).fill().map(() => Array(4).fill(0));
+    // With abilities, losses can exceed 3, but we'll cap display at 4+
+    // Using 5x5 matrix: 0,1,2,3,4+ for both
+    const matrix = Array(5).fill().map(() => Array(5).fill(0));
     let totalScenarios = 0;
 
     // Metrics for Expected Value
@@ -204,33 +285,63 @@ function calculateBattle() {
             const val1 = die1[i];
             const val2 = die2[j];
 
-            const rawAttDamage = Math.max(val1, val2);
-            const rawDefDamage = Math.min(val1, val2);
+            // Dice allocation - Guerrilla War swaps who gets the high roll
+            let rawAttDamage, rawDefDamage;
+            if (abilities.defender.guerrillaWar) {
+                // Woodland Alliance: Defender gets high roll, attacker gets low
+                rawAttDamage = Math.min(val1, val2);
+                rawDefDamage = Math.max(val1, val2);
+            } else {
+                // Normal: Attacker gets high roll, defender gets low
+                rawAttDamage = Math.max(val1, val2);
+                rawDefDamage = Math.min(val1, val2);
+            }
 
-            let defLost = Math.min(rawAttDamage, attCount); // Damage dealt
-            let attLost = Math.min(rawDefDamage, defCount); // Damage dealt
+            // Extra Hit ability: Attacker deals +1 damage
+            if (abilities.attacker.extraHit) {
+                rawAttDamage += 1;
+            }
 
-            // Cap by existing units
-            defLost = Math.min(defLost, defCount);
-            attLost = Math.min(attLost, attCount);
+            // Defenseless bonus: +1 hit if defender has 0 warriors
+            if (defCount === 0) {
+                rawAttDamage += 1;
+            }
+
+            // Calculate actual losses (capped by warriors on each side)
+            let defLost = Math.min(rawAttDamage, defCount);
+            let attLost = Math.min(rawDefDamage, attCount);
+
+            // Ignore First Hit: Reduce damage taken by 1 (min 0)
+            // Attacker's ignore first hit reduces damage from defender
+            if (abilities.attacker.ignoreFirstHit && attLost > 0) {
+                attLost = Math.max(0, attLost - 1);
+            }
+            // Defender's ignore first hit reduces damage from attacker
+            if (abilities.defender.ignoreFirstHit && defLost > 0) {
+                defLost = Math.max(0, defLost - 1);
+            }
+
+            // Add ambush damage to attacker loss
+            attLost = Math.min(attCount, attLost + ambushDamage);
 
             // Accumulate for EV
             totalAttLost += attLost;
             totalDefLost += defLost;
 
-            if (attLost <= 3 && defLost <= 3) {
-                matrix[attLost][defLost]++;
-            }
+            // Cap at 4 for matrix display (4 = "4+")
+            const matrixAttLost = Math.min(attLost, 4);
+            const matrixDefLost = Math.min(defLost, 4);
+            matrix[matrixAttLost][matrixDefLost]++;
         }
     }
 
     const evAtt = totalScenarios > 0 ? (totalAttLost / totalScenarios).toFixed(2) : 0;
     const evDef = totalScenarios > 0 ? (totalDefLost / totalScenarios).toFixed(2) : 0;
 
-    renderBattleMatrix(matrix, totalScenarios, evAtt, evDef);
+    renderBattleMatrix(matrix, totalScenarios, evAtt, evDef, abilities);
 }
 
-function renderBattleMatrix(matrix, total, evAtt, evDef) {
+function renderBattleMatrix(matrix, total, evAtt, evDef, abilities) {
     const container = document.getElementById('table-wrapper');
     const evContainer = document.getElementById('ev-results');
 
@@ -240,8 +351,22 @@ function renderBattleMatrix(matrix, total, evAtt, evDef) {
         return;
     }
 
+    // Build active abilities summary
+    const activeAbilities = [];
+    if (abilities?.defender?.guerrillaWar) activeAbilities.push('Guerrilla War');
+    if (abilities?.attacker?.extraHit) activeAbilities.push('Extra Hit (Att)');
+    if (abilities?.attacker?.ignoreFirstHit) activeAbilities.push('Ignore Hit (Att)');
+    if (abilities?.defender?.ignoreFirstHit) activeAbilities.push('Ignore Hit (Def)');
+    if (abilities?.defender?.ambush && !abilities?.attacker?.foilAmbush) activeAbilities.push('Ambush');
+    if (abilities?.defender?.ambush && abilities?.attacker?.foilAmbush) activeAbilities.push('Ambush (Foiled)');
+
+    const abilitySummary = activeAbilities.length > 0
+        ? `<div class="abilities-active">Active: ${activeAbilities.join(', ')}</div>`
+        : '';
+
     // --- EV Display ---
     evContainer.innerHTML = `
+        ${abilitySummary}
         <div class="ev-stat">
             <h3>Avg Attacker Loss</h3>
             <div class="value" style="color:#f87171">${evAtt}</div>
@@ -256,12 +381,17 @@ function renderBattleMatrix(matrix, total, evAtt, evDef) {
         </div>
     `;
 
-    // Calculate Row/Col Sums
-    const rowSums = [0, 0, 0, 0];
-    const colSums = [0, 0, 0, 0];
+    // Determine matrix size based on whether we have non-zero values in row/col 4
+    const hasRow4 = matrix[4].some(v => v > 0);
+    const hasCol4 = matrix.some(row => row[4] > 0);
+    const matrixSize = (hasRow4 || hasCol4) ? 5 : 4;
 
-    for (let r = 0; r < 4; r++) {
-        for (let c = 0; c < 4; c++) {
+    // Calculate Row/Col Sums
+    const rowSums = Array(matrixSize).fill(0);
+    const colSums = Array(matrixSize).fill(0);
+
+    for (let r = 0; r < matrixSize; r++) {
+        for (let c = 0; c < matrixSize; c++) {
             rowSums[r] += matrix[r][c];
             colSums[c] += matrix[r][c];
         }
@@ -271,24 +401,23 @@ function renderBattleMatrix(matrix, total, evAtt, evDef) {
 
     // Header Row: Defender Losses (Columns)
     html += '<thead><tr><th>Att \\ Def</th>';
-    for (let c = 0; c < 4; c++) {
-        html += `<th>D Lost ${c}</th>`;
+    for (let c = 0; c < matrixSize; c++) {
+        const label = c === 4 ? '4+' : c;
+        html += `<th>D Lost ${label}</th>`;
     }
     html += '<th class="sum-col">Total</th></tr></thead>';
 
     html += '<tbody>';
 
     // Rows: Attacker Losses
-    for (let r = 0; r < 4; r++) {
-        // Skip row if completely empty (optional, but requested "4x4" implies showing all)
-        // Let's show all 0-3 for consistency
-
+    for (let r = 0; r < matrixSize; r++) {
         html += '<tr>';
         // Row Header
-        html += `<th>A Lost ${r}</th>`;
+        const rowLabel = r === 4 ? '4+' : r;
+        html += `<th>A Lost ${rowLabel}</th>`;
 
         // Data Cells
-        for (let c = 0; c < 4; c++) {
+        for (let c = 0; c < matrixSize; c++) {
             const count = matrix[r][c];
             const percent = ((count / total) * 100).toFixed(1);
             const opacity = count > 0 ? 1 : 0.3;
@@ -309,7 +438,7 @@ function renderBattleMatrix(matrix, total, evAtt, evDef) {
 
     // Footer Row: Column Sums
     html += '<tr class="sum-row"><th>Total</th>';
-    for (let c = 0; c < 4; c++) {
+    for (let c = 0; c < matrixSize; c++) {
         const colPct = ((colSums[c] / total) * 100).toFixed(1);
         html += `<td>${colPct}%</td>`;
     }

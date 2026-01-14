@@ -22,25 +22,84 @@
             <section class="battle-section">
 
                 <div class="controls card">
-                    <div class="control-group">
-                        <label>Attacker Warriors</label>
-                        <select id="att-dice">
-                            <option value="0">0 Warriors</option>
-                            <option value="1">1 Warrior</option>
-                            <option value="2">2 Warriors</option>
-                            <option value="3" selected>3+ Warriors</option>
-                        </select>
+                    <div class="combatant-column">
+                        <h3 class="combatant-title attacker-title">Attacker</h3>
+                        <div class="control-group">
+                            <label>Warriors</label>
+                            <select id="att-dice">
+                                <option value="0">0 Warriors</option>
+                                <option value="1">1 Warrior</option>
+                                <option value="2">2 Warriors</option>
+                                <option value="3" selected>3+ Warriors</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>Faction Preset</label>
+                            <select id="att-faction">
+                                <option value="none">No Faction</option>
+                                <option value="eyrie-commander">Eyrie (Commander)</option>
+                                <option value="hundreds-wrathful">Lord of the Hundreds (Wrathful)</option>
+                                <option value="hundreds-stubborn">Lord of the Hundreds (Stubborn)</option>
+                                <option value="vagabond-ronin">Vagabond (Ronin)</option>
+                                <option value="keepers-relic">Keepers in Iron (w/Relic)</option>
+                            </select>
+                        </div>
+                        <div class="ability-toggles">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="att-extra-hit">
+                                <span>Extra Hit (+1 damage)</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="att-ignore-hit">
+                                <span>Ignore First Hit</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="att-foil-ambush">
+                                <span>Foil Ambush</span>
+                            </label>
+                        </div>
                     </div>
+
                     <div class="vs-badge">VS</div>
-                    <div class="control-group">
-                        <label>Defender Warriors</label>
-                        <select id="def-dice">
-                            <option value="0">0 Warriors</option>
-                            <option value="1">1 Warrior</option>
-                            <option value="2" selected>2 Warriors</option>
-                            <option value="3">3+ Warriors</option>
-                        </select>
+
+                    <div class="combatant-column">
+                        <h3 class="combatant-title defender-title">Defender</h3>
+                        <div class="control-group">
+                            <label>Warriors</label>
+                            <select id="def-dice">
+                                <option value="0">0 Warriors</option>
+                                <option value="1">1 Warrior</option>
+                                <option value="2" selected>2 Warriors</option>
+                                <option value="3">3+ Warriors</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>Faction Preset</label>
+                            <select id="def-faction">
+                                <option value="none">No Faction</option>
+                                <option value="woodland-alliance">Woodland Alliance</option>
+                                <option value="keepers-relic">Keepers in Iron (w/Relic)</option>
+                                <option value="hundreds-stubborn">Lord of the Hundreds (Stubborn)</option>
+                            </select>
+                        </div>
+                        <div class="ability-toggles">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="def-guerrilla-war">
+                                <span>Guerrilla War (higher roll)</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="def-ignore-hit">
+                                <span>Ignore First Hit</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="def-ambush">
+                                <span>Ambush (2 pre-hits)</span>
+                            </label>
+                        </div>
                     </div>
+                </div>
+
+                <div class="calculate-row">
                     <button onclick="calculateBattle()" class="calc-btn">Calculate Interactions</button>
                 </div>
 
