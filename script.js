@@ -256,19 +256,14 @@ function getAbilities() {
 
 // Logic for Root: High roll (Attacker) vs Low roll (Defender)
 // Now with faction ability support
+// IMPORTANT: "Ignore First Hit" is a ONE-TIME effect per battle.
+// If used on ambush, it cannot also reduce dice damage.
 function calculateBattle() {
     const attCount = parseInt(document.getElementById('att-dice').value);
     const defCount = parseInt(document.getElementById('def-dice').value);
     const abilities = getAbilities();
 
-    // Pre-battle: Calculate ambush damage (happens before dice roll)
-    let ambushDamage = 0;
-    if (abilities.defender.ambush && !abilities.attacker.foilAmbush) {
-        ambushDamage = Math.min(2, attCount); // Ambush deals 2 hits, capped by attacker warriors
-    }
-
     // Matrix [A-Loss][D-Loss] -> Count
-    // With abilities, losses can exceed 3, but we'll cap display at 4+
     // Using 5x5 matrix: 0,1,2,3,4+ for both
     const matrix = Array(5).fill().map(() => Array(5).fill(0));
     let totalScenarios = 0;
@@ -282,6 +277,32 @@ function calculateBattle() {
         for (let j = 0; j < die2.length; j++) {
             totalScenarios++;
 
+            // Track if "Ignore First Hit" has been consumed this battle
+            let attackerIgnoreUsed = false;
+            let defenderIgnoreUsed = false;
+
+            // === PHASE 1: AMBUSH (pre-battle) ===
+            // Ambush happens BEFORE dice roll and affects attacker's damage capacity
+            let ambushDamage = 0;
+            let attRemainingWarriors = attCount;
+
+            if (abilities.defender.ambush && !abilities.attacker.foilAmbush) {
+                ambushDamage = 2;
+
+                // Attacker's Ignore First Hit can reduce ambush damage by 1
+                if (abilities.attacker.ignoreFirstHit && !attackerIgnoreUsed) {
+                    ambushDamage -= 1;
+                    attackerIgnoreUsed = true; // CONSUMED - cannot be used on dice damage
+                }
+
+                // Cap ambush damage by attacker warriors
+                ambushDamage = Math.min(ambushDamage, attCount);
+
+                // Attacker loses warriors from ambush (reduces their damage capacity)
+                attRemainingWarriors = attCount - ambushDamage;
+            }
+
+            // === PHASE 2: DICE ROLL ===
             const val1 = die1[i];
             const val2 = die2[j];
 
@@ -302,27 +323,34 @@ function calculateBattle() {
                 rawAttDamage += 1;
             }
 
-            // Defenseless bonus: +1 hit if defender has 0 warriors
+            // Defenseless bonus: +1 extra hit if defender has 0 warriors
             if (defCount === 0) {
                 rawAttDamage += 1;
             }
 
-            // Calculate actual losses (capped by warriors on each side)
-            let defLost = Math.min(rawAttDamage, defCount);
-            let attLost = Math.min(rawDefDamage, attCount);
+            // === PHASE 3: CALCULATE HITS FROM DICE ===
+            // Attacker's hits limited by REMAINING warriors (after ambush) AND defender count
+            let defLost = Math.min(rawAttDamage, attRemainingWarriors, defCount);
 
-            // Ignore First Hit: Reduce damage taken by 1 (min 0)
-            // Attacker's ignore first hit reduces damage from defender
-            if (abilities.attacker.ignoreFirstHit && attLost > 0) {
-                attLost = Math.max(0, attLost - 1);
-            }
-            // Defender's ignore first hit reduces damage from attacker
-            if (abilities.defender.ignoreFirstHit && defLost > 0) {
-                defLost = Math.max(0, defLost - 1);
+            // Defender's hits limited by their warriors AND attacker's remaining warriors
+            let diceDamageToAtt = Math.min(rawDefDamage, defCount, attRemainingWarriors);
+
+            // === PHASE 4: APPLY IGNORE FIRST HIT TO DICE DAMAGE ===
+            // Attacker's ignore (only if NOT already used on ambush)
+            if (abilities.attacker.ignoreFirstHit && !attackerIgnoreUsed && diceDamageToAtt > 0) {
+                diceDamageToAtt -= 1;
+                attackerIgnoreUsed = true;
             }
 
-            // Add ambush damage to attacker loss
-            attLost = Math.min(attCount, attLost + ambushDamage);
+            // Defender's ignore first hit (reduces damage from attacker's dice)
+            if (abilities.defender.ignoreFirstHit && !defenderIgnoreUsed && defLost > 0) {
+                defLost -= 1;
+                defenderIgnoreUsed = true;
+            }
+
+            // === TOTAL LOSSES ===
+            let attLost = ambushDamage + diceDamageToAtt;
+            attLost = Math.min(attLost, attCount); // Can't lose more warriors than you have
 
             // Accumulate for EV
             totalAttLost += attLost;
