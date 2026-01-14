@@ -328,25 +328,26 @@ function calculateBattle() {
                 rawAttDamage += 1;
             }
 
-            // === PHASE 3: CALCULATE HITS FROM DICE ===
+            // === PHASE 3: APPLY IGNORE FIRST HIT TO RAW DAMAGE ===
+            // Ignore First Hit reduces INCOMING damage before capping by warriors
+            // Attacker's ignore (only if NOT already used on ambush)
+            if (abilities.attacker.ignoreFirstHit && !attackerIgnoreUsed && rawDefDamage > 0) {
+                rawDefDamage -= 1;
+                attackerIgnoreUsed = true;
+            }
+
+            // Defender's ignore first hit
+            if (abilities.defender.ignoreFirstHit && !defenderIgnoreUsed && rawAttDamage > 0) {
+                rawAttDamage -= 1;
+                defenderIgnoreUsed = true;
+            }
+
+            // === PHASE 4: CALCULATE ACTUAL LOSSES (capped by warriors) ===
             // Attacker's hits limited by REMAINING warriors (after ambush) AND defender count
             let defLost = Math.min(rawAttDamage, attRemainingWarriors, defCount);
 
             // Defender's hits limited by their warriors AND attacker's remaining warriors
             let diceDamageToAtt = Math.min(rawDefDamage, defCount, attRemainingWarriors);
-
-            // === PHASE 4: APPLY IGNORE FIRST HIT TO DICE DAMAGE ===
-            // Attacker's ignore (only if NOT already used on ambush)
-            if (abilities.attacker.ignoreFirstHit && !attackerIgnoreUsed && diceDamageToAtt > 0) {
-                diceDamageToAtt -= 1;
-                attackerIgnoreUsed = true;
-            }
-
-            // Defender's ignore first hit (reduces damage from attacker's dice)
-            if (abilities.defender.ignoreFirstHit && !defenderIgnoreUsed && defLost > 0) {
-                defLost -= 1;
-                defenderIgnoreUsed = true;
-            }
 
             // === TOTAL LOSSES ===
             let attLost = ambushDamage + diceDamageToAtt;
